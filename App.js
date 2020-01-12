@@ -29,29 +29,41 @@ import {
 } from 'react-native/Libraries/NewAppScreen';
 
 class App extends React.Component {
-  _onPressButton() {
+  constructor(props) {
+    super(props);
+    this.state = {contacts: []};
+  }
+
+  componentDidMount() {
+    this._onPressButton();
+  }
+
+  getContactsList = contacts => {
+    return contacts;
+  };
+
+  _onPressButton = () => {
     PermissionsAndroid.request(PermissionsAndroid.PERMISSIONS.READ_CONTACTS, {
       title: 'Contacts',
       message: 'This app would like to view your contacts.',
+      buttonPositive: 'Please accept bare mortal',
     })
       .then(() => {
-        console.warn('Then');
         Contacts.getAll((err, contacts) => {
-          console.warn('Error. err = ', err);
-          console.warn('2. contacts = ', contacts);
-          if (err === 'denied') {
-            // error
+          if (err) {
+            console.warn('Error: ', err);
           } else {
-            // contacts returned in Array
+            this.setState({contacts});
           }
         });
       })
       .catch(err => {
         console.warn('Error: ', err);
       });
-  }
+  };
 
   render() {
+    const {contacts} = this.state;
     return (
       <>
         <StatusBar barStyle="dark-content" />
@@ -65,20 +77,17 @@ class App extends React.Component {
               </View>
             )}
             <View style={styles.body}>
-              <Button
-                onPress={this._onPressButton}
-                title={'This is a button'}
-              />
+              <Button onPress={this._onPressButton} title={'Load Contacts'} />
               <List>
-                <ListItem>
-                  <Text>Red</Text>
-                </ListItem>
-                <ListItem>
-                  <Text>Green</Text>
-                </ListItem>
-                <ListItem>
-                  <Text>Blue</Text>
-                </ListItem>
+                {contacts.map(contact => {
+                  return (
+                    <List>
+                      <ListItem>
+                        <Text>{contact && contact.displayName}</Text>
+                      </ListItem>
+                    </List>
+                  );
+                })}
               </List>
             </View>
           </ScrollView>
